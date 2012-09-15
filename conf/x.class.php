@@ -6,59 +6,75 @@
  * @package micool strtoxx
  * @version 1.0
  */
-class MicoolX {
+class MicoolX extends AMPCrypt {
 
-    static $key = 'wenmicool';
+//    static $key = 'wenmicool';
+    static $code_key = '%A1D2c=#@<!>###OH612-X#+%q==';
 
-    static private function ekey() {
-        return substr(md5(self::$key) . sha1(self::$key), 19, 8);
+    static function keycall($v) {
+        return str_replace('<!>', $v, self::$code_key);
     }
 
 //en
     static function encode($value) {
-        $td = mcrypt_module_open(MCRYPT_DES, '', 'ecb', ''); //使用MCRYPT_DES算法,ecb模式   
-        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
-        mcrypt_generic_init($td, self::ekey(), $iv); //初始处理   
-        $encrypted = mcrypt_generic($td, $value);
-        mcrypt_generic_deinit($td);
-        mcrypt_module_close($td);
-        return $encrypted;
+//        $td = mcrypt_module_open(MCRYPT_DES, '', 'ecb', ''); //使用MCRYPT_DES算法,ecb模式   
+//        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+//        mcrypt_generic_init($td, self::ekey(), $iv); //初始处理   
+//        $encrypted = mcrypt_generic($td, $value);
+//        mcrypt_generic_deinit($td);
+//        mcrypt_module_close($td);
+//        return $encrypted;
+        return self::encrypt($value);
     }
 
 //de
     static function decode($value) {
-        $td = mcrypt_module_open(MCRYPT_DES, '', 'ecb', ''); //使用MCRYPT_DES算法,ecb模式   
-        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
-        mcrypt_generic_init($td, self::ekey(), $iv); //初始处理   
-        $decrypted = mdecrypt_generic($td, $value);
-        mcrypt_generic_deinit($td);
-        mcrypt_module_close($td);
-        return $decrypted;
+//        $td = mcrypt_module_open(MCRYPT_DES, '', 'ecb', ''); //使用MCRYPT_DES算法,ecb模式   
+//        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+//        mcrypt_generic_init($td, self::ekey(), $iv); //初始处理   
+//        $decrypted = mdecrypt_generic($td, $value);
+//        mcrypt_generic_deinit($td);
+//        mcrypt_module_close($td);
+//        return $decrypted;
+        return self::dencrypt($value);
     }
 
-    
-    static function xcode_en($value,$nb){
-        if($nb%2){
-            $vi=intval($nb%2);
-        }else{
-            $vi=intval($nb%3);
+    static function xcode_en($value, $nb) {
+        if ($nb % 2) {
+            $vi = intval($nb % 2);
+        } else {
+            $vi = intval($nb % 3);
         }
-        for($i=0;$i<$vi;$i++){
-            $value= base64_encode($value);
+        for ($i = 0; $i < $vi; $i++) {
+            $value = base64_encode($value);
+        }
+        return self::str_insert($value, intval(strlen($value) / 2), self::keycall(md5($nb)));
+    }
+
+    static function xcode_de($value, $nb) {
+        $value = str_replace(self::keycall(md5($nb)), '', $value);
+        if ($nb % 2) {
+            $vi = intval($nb % 2);
+        } else {
+            $vi = intval($nb % 3);
+        }
+        for ($i = 0; $i < $vi; $i++) {
+            $value = base64_decode($value);
         }
         return $value;
     }
-    
-    static function xcode_de($value,$nb) {
-        if($nb%2){
-            $vi=intval($nb%2);
-        }else{
-            $vi=intval($nb%3);
+
+    static function str_insert($str, $i, $substr) {
+        $startstr = '';
+        $laststr = '';
+        for ($j = 0; $j < $i; $j++) {
+            $startstr .= $str[$j];
         }
-        for($i=0;$i<$vi;$i++){
-            $value= base64_decode($value);
+        for ($j = $i; $j < strlen($str); $j++) {
+            $laststr .= $str[$j];
         }
-        return $value;
+        $str = ($startstr . $substr . $laststr);
+        return $str;
     }
 
     /**
@@ -106,14 +122,14 @@ class MicoolX {
     function read($path) {
         
     }
-    
-    static function log($info){
-        $path='pss/log/access.log';
-        $word='Time:'.date('Y-m-d H:i:s');
-        $word.=' C-IP:'.self::Get_Real_Ip();
-        $word.=' S-IP:'.self::Real_Server_Ip();
-        $word.=' info:'.$info;
-        self::write($path,$word,'log');
+
+    static function log($info) {
+        $path = 'pss/log/access.log';
+        $word = 'Time:' . date('Y-m-d H:i:s');
+        $word.=' C-IP:' . self::Get_Real_Ip();
+        $word.=' S-IP:' . self::Real_Server_Ip();
+        $word.=' info:' . $info;
+        self::write($path, $word, 'log');
     }
 
     static function write($path, $word, $type = 'log') {
@@ -142,7 +158,7 @@ class MicoolX {
      * @param type $type 
      */
     static function Counts($type = 'r') {
-        $filepath='conf/lib.conf';
+        $filepath = 'conf/lib.conf';
         if (!file_exists($filepath))
             return 0;
         switch ($type) {
@@ -176,13 +192,13 @@ class MicoolX {
      * @param unknown_type $array
      * @return unknown
      */
-    function object_array($array) {
+    static function object_array($array) {
         if (is_object($array)) {
             $array = (array) $array;
         }
         if (is_array($array)) {
             foreach ($array as $key => $value) {
-                $array [$key] = object_array($value);
+                $array [$key] = self::object_array($value);
             }
         }
         return $array;
@@ -239,6 +255,44 @@ class MicoolX {
         }
 
         return $serverip;
+    }
+
+}
+
+class AMPCrypt {
+
+    static $key = 'wenmicool';
+
+    static private function ekey() {
+        return substr(md5(self::$key) . sha1(self::$key), 19, 8);
+    }
+
+    private static function getKey() {
+        return substr(md5(self::$key) . sha1(self::$key), 19, 8);
+//        return md5('exampleKey');
+    }
+
+    public static function encrypt($value) {
+        $td = mcrypt_module_open('tripledes', '', 'ecb', '');
+        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_DEV_RANDOM);
+        $key = substr(self::getKey(), 0, mcrypt_enc_get_key_size($td));
+        mcrypt_generic_init($td, $key, $iv);
+        $ret = base64_encode(mcrypt_generic($td, $value));
+        mcrypt_generic_deinit($td);
+        mcrypt_module_close($td);
+        return $ret;
+    }
+
+    public static function dencrypt($value) {
+        $td = mcrypt_module_open('tripledes', '', 'ecb', '');
+        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_DEV_RANDOM);
+        $key = substr(self::getKey(), 0, mcrypt_enc_get_key_size($td));
+        $key = substr(self::getKey(), 0, mcrypt_enc_get_key_size($td));
+        mcrypt_generic_init($td, $key, $iv);
+        $ret = trim(mdecrypt_generic($td, base64_decode($value)));
+        mcrypt_generic_deinit($td);
+        mcrypt_module_close($td);
+        return $ret;
     }
 
 }
