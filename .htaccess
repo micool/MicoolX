@@ -1,0 +1,7 @@
+RewriteEngine On
+RewriteRule ^/?index$ mypasskey.php [L]
+RewriteRule ^/?v([a-zA-Z0-9_]+)$ mypasskey.php?s=$1 [L]
+RewriteRule ^/?k([a-zA-Z0-9_]+)$ mypasskey.php?keys=$1 [L]
+RewriteRule ^/?([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$ mypasskey.php?ac=$1&keywords=$2 [L]
+ErrorDocument 400 ../url.active/error.html
+DirectoryIndex index.html index.php default.php

@@ -3,41 +3,50 @@ header('Content-Type:text/html;charset=utf-8');
 include_once 'conf/mail/mail.config.php';
 include_once 'conf/mail/class.phpmailer.php';
 include_once 'conf/x.class.php';
-$PkeyLink = 'http://127.0.0.1/micoolx/mypasskey.php';
+$PkeyLink = 'http://p.micool.cn/micoolx/mypasskey.php?s=so&keys=';
 //echo md5_file('mypasskey.php');
-//$vars=new MicoolX();
-//$vars->email($ConMail,'test', '');
-
-echo MicoolX::xcode_en('micool', 45);
+//echo MicoolX::str_insert('222222222222333333333333333', 5, 'asdasd');
+//echo MicoolX::xcode_en('1', 45);
+//echo '<br />';
+//echo MicoolX::xcode_de('MQ%A1D2c=#@6c8349cc7260ae62e3b1396831a8398f###OH612-X#+%q====',45);
 //echo MicoolX::xcode_de('bWljb29s', 45);
-
+$varstomail = new MicoolX();
 
 if (isset($_GET['ac'])) {
     if (function_exists($_GET['ac'])) {
         $_GET['ac']();
     } else {
         MicoolX::log('ac参数错误！');
+//        $varstomail->email($ConMail,'浏览错误', 'ac请求不正确：'.$_POST['keywords']);
         exit('error');
     }
 }
 
 function search() {
-    if (isset($_POST['keywords'])) {
-        $thenewID = base64_decode($_POST['keywords']);
+    global $ConMail;
+    $varstomail = new MicoolX();
+    if (isset($_REQUEST['keywords'])) {
+        if (is_integer($_REQUEST['keywords'])) {
+            $thenewID = $_REQUEST['keywords'];
+        } else {
+            $thenewID = base64_decode($_REQUEST['keywords']);
+        }
         $thepath = 'pss/x/' . $thenewID . '.xmd';
         if (!is_file($thepath)) {
+            $varstomail->email($ConMail, '查询信息', '查询失败 [c:'.MicoolX::Get_Real_Ip().'s:'.MicoolX::Real_Server_Ip().']<br /> <b>还未建立</b> <br />查询内容：' . $_REQUEST['keywords']);
             $back['status'] = false;
         } else {
             $back['status'] = true;
             $fp = @fopen($thepath, "r");
-            
-            $tempinfo = MicoolX::encode(stream_get_contents($fp));
-            echo $tempinfo;
-            $back['info']=$tempinfo;
-          //  $back['time'] = $tempinfo['time'];
-           // $back['title'] = base64_decode($tempinfo['title']);
-           // $back['value'] = base64_decode($tempinfo['value']);
-            MicoolX::log('查询了：' . $thenewID);
+            $tempinfo = MicoolX::object_array(json_decode(MicoolX::decode(stream_get_contents($fp))));
+            $back['key'] = $_REQUEST['keywords'];
+            $back['id'] = $thenewID;
+            $back['time'] = $tempinfo['time'];
+            $back['title'] = base64_decode(MicoolX::xcode_de($tempinfo['title'], $thenewID));
+            $back['value'] = base64_decode(MicoolX::xcode_de($tempinfo['value'], $thenewID));
+//           print_r($back);
+            MicoolX::log('查询了：' . $_REQUEST['keywords'] . '(' . $thenewID . ')');
+            $varstomail->email($ConMail, '查询信息', '查询成功 [c:'.MicoolX::Get_Real_Ip().'s:'.MicoolX::Real_Server_Ip().']<br /><b>查询内容：</b> <br />查询ID:' . $_REQUEST['keywords'] . '(' . $thenewID . ')<br />(' . $tempinfo['time'] . ')<br />(' . $back['title'] . ')<br />(' . $back['value'].')');
             fclose($fp);
         }
     } else {
@@ -47,26 +56,34 @@ function search() {
 }
 
 function doin() {
+    global $ConMail;
+    $varstomail = new MicoolX();
     //新建状态
     if ($_POST['dk'] == 'new') {
         MicoolX::Counts('+');
         $thenewID = (string) MicoolX::Counts('r');
         $thepath = 'pss/x/' . $thenewID . '.xmd';
-        if (is_file($thepath)) {
+        if ($_POST['dt']=='' || $_POST['dv']=='') {
             $back['status'] = false;
-            MicoolX::log('添加过程ID存在！');
+            MicoolX::log('不能空提交！');
         } else {
-            $in['key'] = base64_encode($thenewID);
-            $in['time'] = date('Y-m-d H:i:s');
-            $in['title'] = base64_encode($_POST['dt']);
-            $in['value'] = base64_encode($_POST['dv']);
-            $word = MicoolX::encode(json_encode($in));
-            MicoolX::write($thepath, $word, 'indata');
-            $back['id'] = $thenewID;
-            $back['key'] = base64_encode($thenewID);
-            $back['title'] = $_POST['dt'];
-            $back['status'] = true;
-            MicoolX::log('添加成功！ [ID:' . $thenewID . '][TITLE:' . $in['title'] . ']');
+            if (is_file($thepath)) {
+                $back['status'] = false;
+                MicoolX::log('添加ID存在！');
+            } else {
+                $in['key'] = base64_encode($thenewID);
+                $in['time'] = date('Y-m-d H:i:s');
+                $in['title'] = MicoolX::xcode_en(base64_encode($_POST['dt']), $thenewID);
+                $in['value'] = MicoolX::xcode_en(base64_encode($_POST['dv']), $thenewID);
+                $word = MicoolX::encode(json_encode($in));
+                MicoolX::write($thepath, $word, 'indata');
+                $back['id'] = $thenewID;
+                $back['key'] = base64_encode($thenewID);
+                $back['title'] = $_POST['dt'];
+                $back['status'] = true;
+                $varstomail->email($ConMail, '添加信息', '添加成功 [c:'.MicoolX::Get_Real_Ip().'s:'.MicoolX::Real_Server_Ip().']<br /> <b>添加内容：</b><br /> ID:' . $in['key'] . '(' . $thenewID . ')<br />(' . $in['time'] . ')<br />(T:'.$_POST['dt'].'=' . $in['title'] . ')<br />(V:' . $in['value'] . ')<br />(c:' . MicoolX::Get_Real_Ip() . ')<br />(s:' . MicoolX::Real_Server_Ip() . ')');
+                MicoolX::log('添加成功！ [ID:' . $thenewID . '][TITLE:' . $in['title'] . ']');
+            }
         }
         MicoolX::backPostjosn($back);
     }
@@ -126,9 +143,10 @@ function doin() {
             ?>
             <div class="search" id="search">
                 <label for="textfield">输入序号：</label>
-                <input type="text" name="tid" id="input" />
+                <input type="text" name="tid" id="input"  value="<?=@$_REQUEST['keys']?>" />
                 <input type="submit" name="button" id="buttonso" value="搜索" />
             </div>
+            <div style="text-align:center;"><a href="?s=do">添加</a></div>
             <div class="zhepass">序号：<br />名称：<br /> 相关值：<br />
                 <a href="#">修改</a> <a href="#">删除</a>
             </div>
@@ -148,6 +166,7 @@ function doin() {
                 <br /><br />
                 <input type="submit" name="button" id="buttontoin" value="提交" style=" float:right;" />
             </div>
+            <div style="text-align:center;"><a href="?s=so">查询</a></div>
             <div class="callback"></div>
             <?php
         }
@@ -159,7 +178,7 @@ function doin() {
                 function(data){
                     if(data.status){
                         $("#search input[name='tid']").val('');
-                        $('.zhepass').show().html('查询成功<br />序号：'+data.title+'<br />名称：'+data.key+'('+data.id+')<br />相关值：'+data.key);
+                        $('.zhepass').show().html('查询成功<br />序号：'+data.key+'('+data.id+')<br />名称：'+data.title+'<br />相关值：'+data.value+'<br />添加时间：'+data.time+'<br />查询时间：'+new Date());
                     }else{
                         $('.zhepass').show().html('没有查询到数据');
                     }
@@ -175,7 +194,7 @@ function doin() {
                                         
                         $("#doing input[name='thetitle']").val('');
                         $("#doing textarea[name='thevalue']").val('')
-                        $('.callback').show().html('添加成功<br />名称：'+data.title+'<br />加密序号：'+data.key+'('+data.id+')<br />获取连接：<a href="<?= $PkeyLink ?>"><?= $PkeyLink ?>/'+data.key+'</a>');
+                        $('.callback').show().html('添加成功<br />名称：'+data.title+'<br />加密序号：'+data.key+'('+data.id+')<br />获取连接：<a href="<?= $PkeyLink ?>'+data.key+'"><?= $PkeyLink ?>'+data.key+'</a>');
                     }else{
                         $('.callback').show().html('添加失败');
                     }
