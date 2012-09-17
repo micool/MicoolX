@@ -3,7 +3,11 @@ header('Content-Type:text/html;charset=utf-8');
 include_once 'conf/mail/mail.config.php';
 include_once 'conf/mail/class.phpmailer.php';
 include_once 'conf/x.class.php';
+<<<<<<< HEAD
 $PkeyLink = 'http://p.micool.cn/micoolx/mypasskey.php?s=so&keys=';
+=======
+$PkeyLink = 'http://127.0.0.1/micoolx';
+>>>>>>> 9aa891c752bdcb099746a08005dcecaadbeb7cf7
 //echo md5_file('mypasskey.php');
 //echo MicoolX::str_insert('222222222222333333333333333', 5, 'asdasd');
 //echo MicoolX::xcode_en('1', 45);
@@ -33,7 +37,11 @@ function search() {
         }
         $thepath = 'pss/x/' . $thenewID . '.xmd';
         if (!is_file($thepath)) {
+<<<<<<< HEAD
             $varstomail->email($ConMail, '查询信息', '查询失败 [c:'.MicoolX::Get_Real_Ip().'s:'.MicoolX::Real_Server_Ip().']<br /> <b>还未建立</b> <br />查询内容：' . $_REQUEST['keywords']);
+=======
+            $varstomail->email($ConMail, '查询信息', '查询失败 <br /> <b>还未建立</b> <br />查询内容：' . $_REQUEST['keywords']);
+>>>>>>> 9aa891c752bdcb099746a08005dcecaadbeb7cf7
             $back['status'] = false;
         } else {
             $back['status'] = true;
@@ -46,7 +54,11 @@ function search() {
             $back['value'] = base64_decode(MicoolX::xcode_de($tempinfo['value'], $thenewID));
 //           print_r($back);
             MicoolX::log('查询了：' . $_REQUEST['keywords'] . '(' . $thenewID . ')');
+<<<<<<< HEAD
             $varstomail->email($ConMail, '查询信息', '查询成功 [c:'.MicoolX::Get_Real_Ip().'s:'.MicoolX::Real_Server_Ip().']<br /><b>查询内容：</b> <br />查询ID:' . $_REQUEST['keywords'] . '(' . $thenewID . ')<br />(' . $tempinfo['time'] . ')<br />(' . $back['title'] . ')<br />(' . $back['value'].')');
+=======
+            $varstomail->email($ConMail, '查询信息', '查询成功 <br /><b>查询内容：</b> <br />查询ID:' . $_REQUEST['keywords'] . '(' . $thenewID . ')<br />(' . $tempinfo['time'] . ')<br />(' . $back['title'] . ')<br />(' . $back['value'].')');
+>>>>>>> 9aa891c752bdcb099746a08005dcecaadbeb7cf7
             fclose($fp);
         }
     } else {
@@ -81,7 +93,11 @@ function doin() {
                 $back['key'] = base64_encode($thenewID);
                 $back['title'] = $_POST['dt'];
                 $back['status'] = true;
+<<<<<<< HEAD
                 $varstomail->email($ConMail, '添加信息', '添加成功 [c:'.MicoolX::Get_Real_Ip().'s:'.MicoolX::Real_Server_Ip().']<br /> <b>添加内容：</b><br /> ID:' . $in['key'] . '(' . $thenewID . ')<br />(' . $in['time'] . ')<br />(T:'.$_POST['dt'].'=' . $in['title'] . ')<br />(V:' . $in['value'] . ')<br />(c:' . MicoolX::Get_Real_Ip() . ')<br />(s:' . MicoolX::Real_Server_Ip() . ')');
+=======
+                $varstomail->email($ConMail, '添加信息', '添加成功<br /> <b>添加内容：</b><br /> ID:' . $in['key'] . '(' . $thenewID . ')<br />(' . $in['time'] . ')<br />(T:' . $in['title'] . ')<br />(V:' . $in['value'] . ')<br />(c:' . MicoolX::Get_Real_Ip() . ')<br />(s:' . MicoolX::Real_Server_Ip() . ')');
+>>>>>>> 9aa891c752bdcb099746a08005dcecaadbeb7cf7
                 MicoolX::log('添加成功！ [ID:' . $thenewID . '][TITLE:' . $in['title'] . ']');
             }
         }
@@ -174,7 +190,7 @@ function doin() {
         <script>
             $('#buttonso').bind('click', function() {
                 var thekey= $("#search input[name='tid']").val();
-                $.post("?ac=search", { "keywords": thekey},
+                $.post("so?ac=search", { "keywords": thekey},
                 function(data){
                     if(data.status){
                         $("#search input[name='tid']").val('');
@@ -194,7 +210,11 @@ function doin() {
                                         
                         $("#doing input[name='thetitle']").val('');
                         $("#doing textarea[name='thevalue']").val('')
+<<<<<<< HEAD
                         $('.callback').show().html('添加成功<br />名称：'+data.title+'<br />加密序号：'+data.key+'('+data.id+')<br />获取连接：<a href="<?= $PkeyLink ?>'+data.key+'"><?= $PkeyLink ?>'+data.key+'</a>');
+=======
+                        $('.callback').show().html('添加成功<br />名称：'+data.title+'<br />加密序号：'+data.key+'('+data.id+')<br />获取连接：<a href="<?= $PkeyLink ?>/k'+data.key+'"><?= $PkeyLink ?>/k'+data.key+'</a>');
+>>>>>>> 9aa891c752bdcb099746a08005dcecaadbeb7cf7
                     }else{
                         $('.callback').show().html('添加失败');
                     }
