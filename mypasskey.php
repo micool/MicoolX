@@ -13,7 +13,7 @@ $PkeyLink = 'http://127.0.0.1/micoolx';
 //echo MicoolX::xcode_en('1', 45);
 //echo '<br />';
 //echo MicoolX::xcode_de('MQ%A1D2c=#@6c8349cc7260ae62e3b1396831a8398f###OH612-X#+%q====',45);
-//echo MicoolX::xcode_de('bWljb29s', 45);
+//echo MicoolX::xcode_de('bWljb29s', 45); 
 $varstomail = new MicoolX();
 
 if (isset($_GET['ac'])) {
